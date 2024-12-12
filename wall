@@ -1,0 +1,49 @@
+### Description
+An Ethereum-compatible wallet contract with multi-signature support.
+
+### Files
+- **`Wallet.sol`**
+  ```solidity
+  pragma solidity ^0.8.0;
+
+  contract Wallet {
+      address[] public owners;
+      uint public requiredSignatures;
+      mapping(address => bool) public isOwner;
+      uint public transactionCount;
+
+      struct Transaction {
+          address to;
+          uint value;
+          bool executed;
+          uint confirmations;
+      }
+      mapping(uint => Transaction) public transactions;
+
+      constructor(address[] memory _owners, uint _requiredSignatures) {
+          require(_owners.length > 0, "Owners required");
+          require(
+              _requiredSignatures > 0 && _requiredSignatures <= _owners.length,
+              "Invalid required number of signatures"
+          );
+
+          for (uint i = 0; i < _owners.length; i++) {
+              isOwner[_owners[i]] = true;
+          }
+
+          owners = _owners;
+          requiredSignatures = _requiredSignatures;
+      }
+
+      function submitTransaction(address _to, uint _value) external {
+          require(isOwner[msg.sender], "Not an owner");
+          transactionCount++;
+          transactions[transactionCount] = Transaction({
+              to: _to,
+              value: _value,
+              executed: false,
+              confirmations: 0
+          });
+      }
+  }
+  ```
